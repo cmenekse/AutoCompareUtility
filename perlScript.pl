@@ -7,7 +7,7 @@ use strict;
 use Cwd;
 use File::Compare;
 use Text::Diff;
-##################################
+###################################
 my $compiledCount=0;
 my $mainDir =getcwd;
 my $vsBinDir = "C:/\"Program Files (x86)\"/\"Microsoft Visual Studio 11.0\"/VC/bin/";
@@ -20,7 +20,7 @@ my $numberOfTsts=0;
 my $isCountedTstsOnce=0;
 my $samplesFileHandler;
 my $samplesFile = "rawStatistics.txt";
-##################################
+###################################
 
 
 

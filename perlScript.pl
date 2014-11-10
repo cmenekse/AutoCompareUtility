@@ -22,10 +22,6 @@ my $samplesFileHandler;
 my $samplesFile = "rawStatistics.txt";
 ###################################
 
-
-
-
-
 sub getPatternFromLine
 {
 	my ($line,$pattern)=@_;
@@ -189,9 +185,6 @@ sub addQuote
 	 return '"'.$str.'"';
 }
 
-
-
-
 sub getNameFromFolderName
 {
 	my $filename = shift(@_);
@@ -288,36 +281,36 @@ sub isCompiled
 
 sub compileFile
 {
-				
-				my ($file,$directory,$fileName)=@_;
-				my $compiled=0;
-				my $compilerCommand ="cl/EHsc ".addQuote($directory."/".$file);
-				#print ("\n COMPILING : " .$directory."/".$file);
-				my $changeDirectoryCommand= "cd " .$vsBinDir;
-				my $executeCommand = $changeDirectoryCommand."&&".$batFile."&&".$compilerCommand;
-				my $moveCommand=$changeDirectoryCommand."&&"."move ".addQuote($fileName.".exe")." " .addQuote($directory);
-				#print("COMMAND: ". $executeCommand.);
-				my $output = qx/$executeCommand/;
-				print("///COMPILE_OUTPUT BEGIN:\n");
-				print($output);
-				open(my $fh, '>>', $compilationReportFile) or die $!;
-				if(isCompiled($output)==0)
-				{
-					
-					print $fh ($fileName. " NOT COMPILED"."\n");
-					
-				}
-				else
-				{
-					print $fh ($fileName. " compiled"."\n");
-					$compiled=1;
-				}
-				
-				print("///COMPILE OUTPUT END\n");
-				#print("MOVE COMMAND: ". $moveCommand."\n");
-				$output=qx/$moveCommand/;
-				#print($output);
-			return $compiled;	
+	
+	my ($file,$directory,$fileName)=@_;
+	my $compiled=0;
+	my $compilerCommand ="cl/EHsc ".addQuote($directory."/".$file);
+	#print ("\n COMPILING : " .$directory."/".$file);
+	my $changeDirectoryCommand= "cd " .$vsBinDir;
+	my $executeCommand = $changeDirectoryCommand."&&".$batFile."&&".$compilerCommand;
+	my $moveCommand=$changeDirectoryCommand."&&"."move ".addQuote($fileName.".exe")." " .addQuote($directory);
+	#print("COMMAND: ". $executeCommand.);
+	my $output = qx/$executeCommand/;
+	print("///COMPILE_OUTPUT BEGIN:\n");
+	print($output);
+	open(my $fh, '>>', $compilationReportFile) or die $!;
+	if(isCompiled($output)==0)
+	{
+		
+		print $fh ($fileName. " NOT COMPILED"."\n");
+		
+	}
+	else
+	{
+		print $fh ($fileName. " compiled"."\n");
+		$compiled=1;
+	}
+	
+	print("///COMPILE OUTPUT END\n");
+	#print("MOVE COMMAND: ". $moveCommand."\n");
+	$output=qx/$moveCommand/;
+	#print($output);
+	return $compiled;	
 }
 
 

@@ -7,6 +7,7 @@ use strict;
 use Cwd;
 use File::Compare;
 use Text::Diff;
+#$Archive::Extract::DEBUG=1;
 ###################################
 my $compiledCount=0;
 my $mainDir =getcwd;
@@ -22,27 +23,24 @@ my $samplesFileHandler;
 my $samplesFile = "rawStatistics.txt";
 ###################################
 
+#Apply a pattern to a line, if it matches return the grouped part
 sub getPatternFromLine
 {
 	my ($line,$pattern)=@_;
 	
 	if( $line=~m/$pattern/)
 	{
-		#print "Matched" . $1. "\n";
 		return $1
-		
 	}
 	
 	else
 	{
-		
-		#print "Here is " .$line . "\n" ;
 		return "ERR"
 	}
 	
 }
-
-
+#Appends the matched part of the pattern to a line and append the grouped part
+#to the array containing all groups from previous lines
 sub createComparableStructureFromFile
 {
 	my($fileHandler , $parsedArray,$pattern) = @_;
@@ -60,20 +58,16 @@ sub createComparableStructureFromFile
 		
 	}
 }
-
-
+#returns 1 if after applying the pattern the files are same
 sub filesAreSameWithPattern
 {
 	my ($file1,$correctFile,$pattern)=@_;
 	my @file1Parsed;
 	my @correctFileParsed;
 	
-	
 	open my $fileHandler1, $file1 or die "Could not open $file1: $!";
 	open my $correctFileHandler , $correctFile or die "Could not open $correctFile: $!";
 	createComparableStructureFromFile($fileHandler1,\@file1Parsed,$pattern);
-	#print join(", ", @file1Parsed);
-	#print("\n");
 	createComparableStructureFromFile($correctFileHandler,\@correctFileParsed,$pattern);
 	close $fileHandler1;
 	close $correctFileHandler;
@@ -89,7 +83,6 @@ sub filesAreSameWithPattern
 	{
 		for (my $i =0; $i<$size1;$i++)
 		{
-			#print ("Comparing ". $file1Parsed[$i] . " vs " . $file1Parsed[$i] . "\n"); 
 			if ($file1Parsed[$i] ne $correctFileParsed[$i])
 			{
 				print $theVeryBigReportFileHandler ( "\nISSUE: Expected : " .$correctFileParsed[$i] . " Got : " .$file1Parsed[$i]."\n");
@@ -101,20 +94,21 @@ sub filesAreSameWithPattern
 	
 	
 }
-
+#extract a zip file to given directory
 sub extractZipFile
 {
+	
 	my ($zipFileName,$extractTo)=@_;
 	my $zipToBeExtracted= Archive::Extract->new(archive=>$zipFileName);
 	$zipToBeExtracted->extract(to=> $extractTo);
 }
-
-
+#Extracts all the zip files in the directory even the ones that are extracted in
+#this method and also it actually does some other things other than extracting too
+#TODO : Refactor
 sub extractAllZipFilesInDirectory
 {
 	my ($directory,$mainSubmitDirectory)=@_;
 	
-	#print("EXECUTING IN DIR: " .$directory."\n");
 	if( directoryContainsExtensionFiles($directory,"cpp")!= 1)
 	{
 		
@@ -127,10 +121,9 @@ sub extractAllZipFilesInDirectory
 		opendir $dh , $directory or die $!;
 		while (my $file = readdir($dh)) 
 		{
-			#print("CURRENT FILE: ". $file ."\n");
-			if($file =~ m/.*\.zip/)
+			if($file =~ m/.*\.zip$/)
 			{
-			   $file =~ m/(.*)\.zip/;
+			   $file =~ m/(.*)\.zip$/;
 			   my $extractTo = $1; 
 			   extractZipFile($directory."/".$file,$directory."/".$extractTo);
 			   my $newDirectory=$directory."/".$extractTo;
@@ -152,12 +145,11 @@ sub extractAllZipFilesInDirectory
 	#possibly contain .cpp files
 	else
 	{	
-		#print("Contains CPP files");
+		
 		my $dh;
 		opendir $dh , $directory or die $!;
 		while (my $file = readdir($dh)) 
 		{
-			#print("\n current File is ". $file ."\n\n");
 			if($file =~ m/(.+)\.cpp/)
 			{
 				
@@ -168,6 +160,7 @@ sub extractAllZipFilesInDirectory
 				my $cTst=0;
 				if($fileIsCompiled==1)
 				{
+					
 					generateOutputs($directory,$filename.".exe",$mainDir);
 					compareAll($filename,$directory,$mainDir,$mainSubmitDirectory,$cTst);
 				}
@@ -178,13 +171,13 @@ sub extractAllZipFilesInDirectory
 	}
 	
 }
-
+#Add quotes to avoid space related issues in windows command line
 sub addQuote
 {
 	 my $str = shift(@_);
 	 return '"'.$str.'"';
 }
-
+#Get the name from the folder name with pattern
 sub getNameFromFolderName
 {
 	my $filename = shift(@_);
@@ -200,7 +193,7 @@ sub getDiff
 	 my $diffs = diff $file1 => $file2;
 	 return $diffs;
 }
-
+#Finds the tst file related that is equal to the searched.
 sub findTstFile
 {
 	my ($searchedTstNum,$inputDirectory) = @_;
@@ -214,16 +207,13 @@ sub findTstFile
 			 my $currentTstNum=$1;
 			 if($currentTstNum==$searchedTstNum)
 			 {
-				#print ("current = " .$currentTstNum . "searched = ". $searchedTstNum);
-				#print("Returning " . $file."\n");
 				return $file;
 			 }
 		}
 	}
 	return "NOT FOUND ";
 }
-
-
+#Compare all the cases for a given file with the correctFile
 sub compareAll
 {
 	my ($filename,$directory,$inputDirectory,$mainSubmitDirectory,$cTst)=@_;
@@ -235,11 +225,8 @@ sub compareAll
 	{
 		if($file=~m/OUTPUT_.*?([0-9]+).*/)
 		{
-			#print("\n\n Matched " .$file."\n\n");
 			my $searchedTstNum = $1;
-			#print("\n\n Searched " .$searchedTstNum."\n\n");
 			my $tstFile=findTstFile($searchedTstNum,$inputDirectory);
-			#print ($tstFile."\n");
 			my $fullPath=$directory."/".$file;
 			print $fh ( "CASE# " . $searchedTstNum ."\n");
 			print $theVeryBigReportFileHandler( "CASE# " . $searchedTstNum ."\n");
@@ -267,7 +254,7 @@ sub compareAll
 	print $samplesFileHandler($cTst.",");
 	
 }
-
+#To check whether the .cpp compiled successfully, could be improved
 sub isCompiled
 {
 	 my $compilerOutput=shift(@_);
@@ -277,21 +264,18 @@ sub isCompiled
 	 }
 	 return 0;
 }
-
-
+#Compiles a file ,prints the report 
+#TODO : $filename and $file does not seem to be ideal names for these variables
 sub compileFile
 {
 	
 	my ($file,$directory,$fileName)=@_;
 	my $compiled=0;
 	my $compilerCommand ="cl/EHsc ".addQuote($directory."/".$file);
-	#print ("\n COMPILING : " .$directory."/".$file);
 	my $changeDirectoryCommand= "cd " .$vsBinDir;
 	my $executeCommand = $changeDirectoryCommand."&&".$batFile."&&".$compilerCommand;
 	my $moveCommand=$changeDirectoryCommand."&&"."move ".addQuote($fileName.".exe")." " .addQuote($directory);
-	#print("COMMAND: ". $executeCommand.);
 	my $output = qx/$executeCommand/;
-	print("///COMPILE_OUTPUT BEGIN:\n");
 	print($output);
 	open(my $fh, '>>', $compilationReportFile) or die $!;
 	if(isCompiled($output)==0)
@@ -307,55 +291,52 @@ sub compileFile
 	}
 	
 	print("///COMPILE OUTPUT END\n");
-	#print("MOVE COMMAND: ". $moveCommand."\n");
 	$output=qx/$moveCommand/;
-	#print($output);
 	return $compiled;	
 }
-
-
+#Generates outputs of the executable by applying the input files
 sub generateOutputs
 {
-		my ($directory,$executable,$inputDirectory)=@_;
-		my $dh;
-		opendir $dh , $mainDir or die $!;
-		while (my $file = readdir($dh)) 
+	my ($directory,$executable,$inputDirectory)=@_;
+	my $dh;
+	opendir $dh , $mainDir or die $!;
+	while (my $file = readdir($dh)) 
+	{
+		if($file =~ m/^(?!OUTPUT)(.*INPUT.*)(\..+)/)
 		{
-			if($file =~ m/^(?!OUTPUT)(.*INPUT.*)(\..+)/)
+			if($isCountedTstsOnce==0)
 			{
-				if($isCountedTstsOnce==0)
-				{
-					$numberOfTsts=$numberOfTsts+1;
-				}
-				my $fileName = $1;
-				my $extension= $2;
-				my $fullFileName= $1.$2;
-				$fileName=~m/.*([0-9]+)/;
-				my $tstNo= $1;
-				$executable=~m/(.*)\.exe/;
-				my $reducedExecutable=$1;
-				
-				my $executeCommand;
-				if( $directory eq $mainDir)
-				{
-					 $executeCommand=addQuote($directory."/".$executable."<".$inputDirectory."/".$fullFileName.">".$directory."/"."OUTPUT_".$tstNo."_".$reducedExecutable.".txt");
-					 #print($executeCommand);
-					 system($executeCommand)
-				}
-				else
-				{
-					my $cdToThatDirectory="cd ".addQuote($directory);
-					
-					system($cdToThatDirectory."&&".addQuote($executable)."<".$inputDirectory."/".$fullFileName.">"."OUTPUT_".$tstNo."_".addQuote($reducedExecutable).".txt");
-				}
-				
-				
-			    
+				$numberOfTsts=$numberOfTsts+1;
 			}
+			my $fileName = $1;
+			my $extension= $2;
+			my $fullFileName= $1.$2;
+			$fileName=~m/.*([0-9]+)/;
+			my $tstNo= $1;
+			$executable=~m/(.*)\.exe/;
+			my $reducedExecutable=$1;
+			
+			my $executeCommand;
+			if( $directory eq $mainDir)
+			{
+				 $executeCommand=addQuote($directory."/".$executable."<".$inputDirectory."/".$fullFileName.">".$directory."/"."OUTPUT_".$tstNo."_".$reducedExecutable.".txt");
+				 system($executeCommand)
+			}
+			else
+			{
+				#workaround needs improvement
+				my $cdToThatDirectory="cd ".addQuote($directory);
+				
+				system($cdToThatDirectory."&&".addQuote($executable)."<".$inputDirectory."/".$fullFileName.">"."OUTPUT_".$tstNo."_".addQuote($reducedExecutable).".txt");
+			}
+			
+			
+		    
 		}
-		$isCountedTstsOnce=1;
+	}
+	$isCountedTstsOnce=1;
 }
-
+#Checks whether two files are equal we can compare with different ways here
 sub areFilesEqual
 {
 	my ($file1,$file2) = @_;
@@ -386,15 +367,13 @@ sub directoryContainsExtensionFiles
 	{
 		if($file =~ m/.*\.$extensionType/)
 		{
-			#print("MATCHED BEGIN");
-			#print($file);
-			#print("MATCHED END");
 			return 1;
 		}
 	}
 	return 0;
 }
-
+#Parses the input file that is seperated by lines for each case. Inside a single line it is seperated with commas (like CSV)
+#This method generates input files for each line hence each case
 sub createInputFilesFromSingleInputFile
 {
 	my $filename = shift(@_);
@@ -406,7 +385,6 @@ sub createInputFilesFromSingleInputFile
 		my @currentLine =split(',',$line);
 		foreach my $singleInput(@currentLine)
 		{
-			#print ( "PRINTING: " .$singleInput."\r\n") ;
 			if($singleInput=~m/-?[0-9]+/)
 			{
 				print $outputFile($singleInput."\r\n");

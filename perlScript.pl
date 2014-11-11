@@ -11,6 +11,7 @@ use Text::Diff;
 ###################################
 my $compiledCount=0;
 my $mainDir =getcwd;
+#my $vsBinDir = "C:/\"Program Files\"/\"Microsoft Visual Studio 11.0\"/VC/bin/";
 my $vsBinDir = "C:/\"Program Files (x86)\"/\"Microsoft Visual Studio 11.0\"/VC/bin/";
 my $batFile="vcvars32.bat";
 my $correctProgramName = "correctProgram.exe";

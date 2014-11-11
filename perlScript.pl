@@ -113,7 +113,7 @@ sub extractAllZipFilesInDirectory
 	if( directoryContainsExtensionFiles($directory,"cpp")!= 1)
 	{
 		
-		if($directory=~m/([A-Za-z]+),.*?([A-Za-z]+)\(.*/)
+		if($directory=~m/([A-Za-z]+),(.*?)\(.*/)
 		{
 			$mainSubmitDirectory=$directory;
 		}
@@ -182,7 +182,7 @@ sub addQuote
 sub getNameFromFolderName
 {
 	my $filename = shift(@_);
-	if ($filename=~m/([A-Za-z]+),.*?([A-Za-z]+)\(.*/)
+	if ($filename=~m/([A-Za-z]+),(.*?)\(.*/)
 	{
 		return  ($2. " ".$1);
 	}

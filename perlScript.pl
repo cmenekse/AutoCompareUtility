@@ -151,7 +151,7 @@ sub extractAllZipFilesInDirectory
 		opendir $dh , $directory or die $!;
 		while (my $file = readdir($dh)) 
 		{
-			if($file =~ m/(.+)\.cpp/)
+			if($file =~ m/(.+)\.cpp$/)
 			{
 				
 				my $filename =$1;
@@ -366,7 +366,7 @@ sub directoryContainsExtensionFiles
 	opendir $dh , $directory or die $!;
 	while (my $file = readdir($dh)) 
 	{
-		if($file =~ m/.*\.$extensionType/)
+		if($file =~ m/.*\.$extensionType$/)
 		{
 			return 1;
 		}

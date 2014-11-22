@@ -6,14 +6,6 @@ import subprocess;
 compilerDirectory="C:/\"Program Files (x86)\"/\"Microsoft Visual Studio 12.0\"/VC/bin/";
 batFile="vcvars32.bat";
 
-def traverse_all_directories(directory):
-    zip_pattern =re.compile('.*\.zip$')
-    files = [f for f in os.listdir('.') if os.path.isfile(f)]
-    for filename in files:
-        if(zip_pattern.match(filename)):
-            print(filename);
-            extract_zip(filename,"extracted");
-
 def compileFile(full_path,filename_without_extension,directory):
 
     compileCommand="cl/EHsc "+ addQuote(full_path);

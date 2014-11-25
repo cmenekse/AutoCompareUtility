@@ -1,9 +1,11 @@
+from __future__ import print_function
 import os;
 import zipfile;
 import re;
 import subprocess;
 
-compilerDirectory="C:/\"Program Files (x86)\"/\"Microsoft Visual Studio 12.0\"/VC/bin/";
+
+compilerDirectory="C:/\"Program Files (x86)\"/\"Microsoft Visual Studio 11.0\"/VC/bin/";
 batFile="vcvars32.bat";
 
 def compileFile(full_path,filename_without_extension,directory):
@@ -37,6 +39,23 @@ def traverse_with_os_walk ():
                 full_path_of_file=os.path.join(mainStartingDirectory,os_walk_root,cppMatch.group(0))
                 filename_without_extension = cppMatch.group(1);
                 compileFile(full_path_of_file,filename_without_extension,directory);
+                
+def createTestCaseFromSingleFile(filename):
+    file = open (filename,"r");
+    wholeFile=file.read();
+    delimiter = "+\/+"
+    outputFilename="INPUT";
+    testCaseNumber = 0;
+    testCases= wholeFile.split(delimiter);
+    for testCase in testCases :
+        caseInputs = testCase.split(",");
+        print ( " printed one " )
+        outputFile = open (outputFilename+str(testCaseNumber),"w");
+        for input in caseInputs :
+             print ( input.strip() , file = outputFile);
+             print (input.strip());
+        outputFile.close();
+        testCaseNumber+=1;
 
 def extract_zip (source,destination):
     #print("Extracting "  + source + " to  " + destination)
@@ -44,5 +63,5 @@ def extract_zip (source,destination):
         zf.extractall(destination);
 
 if __name__ == "__main__":
-    traverse_with_os_walk();
-
+    #traverse_with_os_walk();
+    createTestCaseFromSingleFile("delimitedInputs.txt");
